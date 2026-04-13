@@ -1,0 +1,1432 @@
+You can turn that repo into a really nice “visual + math atlas” of diatoms by structuring it around four pillars: basic structure, morphology taxonomy, math/generative models, and a catalog of species/shapes with images and references. [en.wikipedia](https://en.wikipedia.org/wiki/Frustule)
+
+Below is a concrete repo structure and a roadmap tailored to that.
+
+***
+## Big-picture concept
+Diatoms have silica cell walls (frustules) made of two overlapping valves (“lid” and “base”) connected by a silica girdle; their frustules come in two main morphological families: radially symmetric centric forms and bilaterally symmetric pennate forms, each with huge variation in outline and surface patterns. [en.wikipedia](https://en.wikipedia.org/wiki/Frustule)
+Those shapes can be described and classified with geometry (radial vs bilateral symmetry, aspect ratios, curvature) and with more formal methods like parametric curves and elliptic Fourier descriptors applied to valve outlines. [pmc.ncbi.nlm.nih](https://pmc.ncbi.nlm.nih.gov/articles/PMC6487182/)
+
+Your repo can be the bridge between “microscope art” and “math/GLSL toys”:
+
+- A visual field guide to diatom forms (centric/pennate + subtypes).  
+- Mathematical descriptors and generative scripts that reproduce those forms.  
+- Curated references and image sources for anyone who wants to go deeper.
+
+***
+## Suggested repo structure
+Here’s one possible layout (you can prune/rename to taste):
+
+| Path | Purpose |
+| --- | --- |
+| `/README.md` | Front-page overview and gallery teasers. |
+| `/docs/00_overview.md` | What diatoms are, frustule basics, terminology. |
+| `/docs/01_structure_frustule.md` | Valves, girdle bands, areolae, raphe, centric vs pennate. |
+| `/docs/02_morphology_taxonomy.md` | Shape-based grouping: centric families, pennate families, outlines. |
+| `/docs/03_math_models.md` | Math used: param curves, symmetry, Fourier descriptors, fractals. |
+| `/docs/04_references.md` | Papers, books, image datasets, open licenses. |
+| `/catalog/centric/*.md` | One file per centric “shape family” or genus. |
+| `/catalog/pennate/*.md` | One file per pennate “shape family” or genus. |
+| `/images/raw/` | Source images (only open-licensed or your own). |
+| `/images/processed/` | Cropped/thresholded outlines, SVGs, etc. |
+| `/data/outlines/` | Binary masks, SVG contours, numeric outline data. |
+| `/notebooks/` | Jupyter notebooks showing math + plots. |
+| `/code/shaders/` | GLSL or WebGL sketches generating diatom-ish forms. |
+| `/code/analysis/` | Python scripts for outline extraction, Fourier descriptors, etc. |
+
+You can keep it simple at first: maybe just `docs/`, `catalog/`, `code/`, and `images/`, then grow.
+
+***
+## Core biology/structure pages
+You probably want one “Frustule 101” doc, then a morphology doc.
+
+**Frustule 101 (`docs/01_structure_frustule.md`)**
+
+Anchor concepts to repeat visually and mathematically later:
+
+- Frustule as silica box with two valves (epitheca, hypotheca) that overlap; the joint is reinforced by silica girdle bands. [en.wikipedia](https://en.wikipedia.org/wiki/Frustule)
+- Frustule features you can highlight in diagrams/photos: striae (rows of pores), areolae (individual pores), spines, raphe slits (in motile pennates), septa, etc. [landcareresearch.co](https://www.landcareresearch.co.nz/tools-and-resources/identification/diatoms/diatom-structure)
+- Side view vs valve view: same species looks radically different depending on whether you see it in “girdle” or “valve” view. [landcareresearch.co](https://www.landcareresearch.co.nz/tools-and-resources/identification/freshwater-algae/description-of-major-groups/diatoms)
+
+You can link out to good structural explainers from the README, like:
+
+- [Diatom structure – Manaaki Whenua](https://www.landcareresearch.co.nz/tools-and-resources/identification/diatoms/diatom-structure) [landcareresearch.co](https://www.landcareresearch.co.nz/tools-and-resources/identification/diatoms/diatom-structure)
+- [Diatoms – overview and frustule architecture](https://www.landcareresearch.co.nz/tools-and-resources/identification/freshwater-algae/description-of-major-groups/diatoms) [landcareresearch.co](https://www.landcareresearch.co.nz/tools-and-resources/identification/freshwater-algae/description-of-major-groups/diatoms)
+- [Frustule – overview and terminology](https://en.wikipedia.org/wiki/Frustule) [en.wikipedia](https://en.wikipedia.org/wiki/Frustule)
+
+**Morphology & taxonomy (`docs/02_morphology_taxonomy.md`)**
+
+Here you can organize the visual space:
+
+- Two big bins:  
+  - Centric diatoms: radially symmetric valves (circles/polygons/wheels), striae arranged around a point or ring. [ucl.ac](https://www.ucl.ac.uk/GeolSci/micropal/diatom.html)
+  - Pennate diatoms: bilaterally symmetric valves, boat/needle/elliptical shapes, often with a raphe. [en.wikipedia](https://en.wikipedia.org/wiki/Diatom)
+- Within each, group by outline + symmetry: disc, cylinder, triangle, starburst, ribbon, sigmoid, etc. [accs.uaa.alaska](https://accs.uaa.alaska.edu/wp-content/uploads/KBNERR-Phytoplankton-Guide.pdf)
+- Emphasize that “shape family” is what people will feel visually, while genera/species are formal taxonomic units used in the literature. [sciencedirect](https://www.sciencedirect.com/science/article/abs/pii/S1874778717301265)
+
+This doc is where your artist brain can define your own “visual taxonomy” layered on top of the classical centric/pennate split.
+
+***
+## The catalog: species and shape families
+You can make the catalog multi-resolution:
+
+1. **Shape families (friendly, visual)**  
+   Example: `/catalog/centric/disc_radiate.md`, `/catalog/pennate/lanceolate.md`.  
+   Each file has:
+   - A short description of the outline (e.g., “Perfect disc, radial striae, central areola or annulus”). [ucl.ac](https://www.ucl.ac.uk/GeolSci/micropal/diatom.html)
+   - Example genera/species that often look like this, with links to external ID pages (e.g., *Melosira*, *Coscinodiscus*, *Navicula*, *Cymbella*). [landcareresearch.co](https://www.landcareresearch.co.nz/tools-and-resources/identification/freshwater-algae/description-of-major-groups/diatoms)
+   - 2–4 images (thumbnails) with credits and license, plus an outline drawing/SVG.
+
+2. **Species-level examples (more scientific)**  
+   For some shapes, pick well-described taxa from open-access papers (e.g., new species descriptions) and make a one-page profile: snippet of SEM image if allowed, line drawing, and notes on dimensions and characteristic features. [phytotaxa.mapress](https://phytotaxa.mapress.com/pt/article/view/phytotaxa.637.1.7)
+
+3. **Data hooks**  
+   For each catalog page, optionally link to:
+   - `/data/outlines/<name>.svg`  
+   - `/data/outlines/<name>.json` or `.csv` with sampled contour points  
+   - Generated images from your shaders approximating the same shape.
+
+Good sources for open-access images and structured descriptions include open-access journals and educational sites that use SEM/light-microscopy images of diatoms; always check the license/terms of reuse. [pmc.ncbi.nlm.nih](https://pmc.ncbi.nlm.nih.gov/articles/PMC8282634/)
+
+***
+## Math and generative models section
+This is where you nerd out on “how to parametrize a diatom”.
+
+In `docs/03_math_models.md` and `/notebooks/`, you can progressively escalate from soft to hardcore:
+
+1. **Geometric primitives & symmetry**
+
+   - Parameterize simple centric forms as circles or ellipses with radial ribs and pores (think polar coordinates, \( r(\theta) = R + \epsilon(\theta) \) where \(\epsilon\) is a periodic modulation). [bioengineering.hyperbook.mcgill](https://bioengineering.hyperbook.mcgill.ca/mathematical-models-of-diatoms-understanding-their-complex-shape-reproduction-and-chain-formation/)
+   - Parameterize pennate forms as curves in 2D whose outline is defined by a smooth centerline and a width function, then mirror across the midline for bilateral symmetry. [mathematik.uni-kassel](https://www.mathematik.uni-kassel.de/~seiler/Papers/PDF/DiatomReview.pdf)
+
+2. **Elliptic Fourier Descriptors (EFDs)**
+
+   - EFDs are widely used to encode diatom valve outlines for identification: take the closed contour, decompose into Fourier coefficients, and reconstruct the shape with a small number of harmonics. [pmc.ncbi.nlm.nih](https://pmc.ncbi.nlm.nih.gov/articles/PMC6487182/)
+   - You can add a notebook like `notebooks/efd_diatom_outlines.ipynb` that:  
+     - Loads an outline from `/data/outlines/`,  
+     - Computes EFDs,  
+     - Reconstructs the contour with 5, 10, 20 harmonics and overlays plots.  
+
+3. **Fractals, golden ratios, L-systems**
+
+   - Some authors explicitly frame diatom geometry using fractal dimensions, golden ratios, and L-systems to explain repeating patterns and branching morphologies on frustules. [sciencedirect](https://www.sciencedirect.com/science/article/abs/pii/S1874778717301265)
+   - You could do a “myth vs math” treatment: show where golden ratios actually show up in real measurements, vs where they’re just romantic metaphors, and how fractal dimension can be estimated from pore distribution patterns. [bioengineering.hyperbook.mcgill](https://bioengineering.hyperbook.mcgill.ca/mathematical-models-of-diatoms-understanding-their-complex-shape-reproduction-and-chain-formation/)
+
+4. **Physics-ish models (optional deep dive)**
+
+   - Connect to literature that treats frustules as photonic crystals or hierarchical mechanical structures; you don’t have to reproduce the physics, but you can point to them as inspiration for shader tricks (diffraction, scattering, band-pass textures). [pmc.ncbi.nlm.nih](https://pmc.ncbi.nlm.nih.gov/articles/PMC8282634/)
+   - For each theme, sketch out what a “toy model” in GLSL would look like (e.g., turn a porous lattice into an interference pattern, or model light attenuation through a perforated slab).
+
+***
+## Code & shaders: how to position them
+You could treat `/code/` as two parallel tracks:
+
+1. **Analysis tools (`/code/analysis/`)**
+
+   - Image → outline: scripts to threshold micrographs, extract the largest contour, simplify and save as SVG/points.  
+   - Outline → descriptors: compute EFDs, curvature, aspect ratio, etc., and dump numeric features. [pmc.ncbi.nlm.nih](https://pmc.ncbi.nlm.nih.gov/articles/PMC6487182/)
+   - Small CLI utilities that let people feed in their own diatom images and get “diatom-ish” features out.
+
+2. **Generative tools (`/code/shaders/`)**
+
+   - A set of GLSL fragments with names like `centric_disc_radial.frag`, `pennate_lanceolate.frag`, etc., where each one is your artistic interpretation of a shape family.  
+   - Each shader header comment can point back into the docs/catalog: “Imitates centric disc frustules like *Coscinodiscus*; see `/catalog/centric/disc_radiate.md`.” [ucl.ac](https://www.ucl.ac.uk/GeolSci/micropal/diatom.html)
+   - You can gradually add more biological constraints: valve thickness, pore spacing rules, symmetry-breaking defects, etc., inspired by morphogenesis papers. [sciencedirect](https://www.sciencedirect.com/science/article/abs/pii/S1874778717301265)
+
+***
+## README: what to put on the front page
+Right now the repo is basically a bare shell; the README can become the manifesto and navigation hub.
+
+A first-pass outline for `README.md`:
+
+- **Title & tagline**  
+  “DIATOMIC – a visual and mathematical atlas of diatoms.”
+
+- **What this is**  
+  A short paragraph: silica micro-architectures, centric/pennate forms, art+math focus, not a formal taxonomic key. [en.wikipedia](https://en.wikipedia.org/wiki/Diatom)
+
+- **Sections**  
+  - “Start here”: links to `docs/00_overview.md` and `docs/01_structure_frustule.md`.  
+  - “Browse shapes”: links to `/catalog/centric/` and `/catalog/pennate/`.  
+  - “Math & code”: links to `/docs/03_math_models.md`, `/notebooks/`, and `/code/shaders/`.  
+  - “Credits & references”: link to `docs/04_references.md` with your main paper/sites list. [en.wikipedia](https://en.wikipedia.org/wiki/Frustule)
+
+- **License & reuse**  
+  Spell out licenses separately for code, text, and images (e.g., MIT for code, CC BY-SA for docs, and per-image licenses noted in their metadata).
+
+***
+## A concrete first-week roadmap
+If you want an ordered to‑do list:
+
+1. **Define your scope in README**  
+   - Write the manifesto + section links.  
+   - Add 1–2 teaser images (your own renders or clearly reusable frustule images with credit). [en.wikipedia](https://en.wikipedia.org/wiki/Frustule)
+2. **Create `docs/` skeleton**  
+   - Add 00_overview, 01_structure_frustule, 02_morphology_taxonomy, 03_math_models, 04_references as empty or stubbed files.  
+   - Fill 01 & 02 with short, citation-backed paragraphs using the structural/taxonomic references above. [en.wikipedia](https://en.wikipedia.org/wiki/Frustule)
+
+3. **Start the catalog with 2–3 iconic shapes**  
+   - One centric disc (e.g., *Melosira* / *Coscinodiscus* style). [ucl.ac](https://www.ucl.ac.uk/GeolSci/micropal/diatom.html)
+   - One classic naviculoid pennate (boat-shaped with central raphe). [en.wikipedia](https://en.wikipedia.org/wiki/Diatom)
+   - One strongly curved/sigmoid pennate (e.g., *Eunotia*/*Nitzschia*-type). [cfb.unh](https://cfb.unh.edu/phycokey/Choices/Bacillariophyceae/Pennate/pennate_page/pennate_frustule_structure.htm)
+
+4. **Add one math notebook**  
+   - Minimal notebook that: loads an SVG outline, samples boundary points, fits elliptic Fourier descriptors, and plots reconstructions at different harmonic counts. [pmc.ncbi.nlm.nih](https://pmc.ncbi.nlm.nih.gov/articles/PMC6487182/)
+
+5. **Drop in your first shader(s)**  
+   - Port one or two existing GLSL pieces you have that feel “diatomic,” even if they’re not yet biologically disciplined.  
+   - Add a comment block describing what real shapes they’re loosely inspired by, with links into docs/catalog.
+
+6. **Iterate: one shape family at a time**  
+   - For each new shape family you add to `/catalog/`, also:  
+     - Add at least one outline dataset.  
+     - Add either a notebook cell or a shader that riffs on it.  
+     - Add at least 1–2 references that show that shape clearly. [pmc.ncbi.nlm.nih](https://pmc.ncbi.nlm.nih.gov/articles/PMC8282634/)
+
+***
+
+If you like, next step I can help you draft the actual README text and the initial `docs/01_structure_frustule.md` content so you can just paste it into the repo and start committing.
+
+Nice. Here’s a concrete set of files you can pretty much copy‑paste in as a first commit.
+
+I’ll give you:
+
+- A new `README.md`  
+- `docs/00_overview.md`  
+- `docs/01_structure_frustule.md`  
+
+You can tweak language/voice as you like.
+
+***
+
+## README.md (front page)
+
+```markdown
+# DIATOMIC
+
+A visual and mathematical atlas of diatoms — tiny silica architectures with outrageous symmetry, pattern, and micro-geometry.
+
+This repo focuses on:
+
+- **Visual structure** – frustules, valves, girdle bands, pores, spines.
+- **Morphology & shape families** – centric vs pennate, discs, boats, ribbons, sigmoids.
+- **Math & generative models** – parametric outlines, symmetry, elliptic Fourier descriptors, fractal-ish patterns.
+- **A catalog of forms** – curated examples with outlines, references, and code hooks.
+
+---
+
+## What is a diatom?
+
+Diatoms are unicellular microalgae whose cell wall is a glassy silica shell called a **frustule**.[web:20][web:28]  
+The frustule is built from two overlapping halves (thecae or valves) that fit together like a petri dish, with the joint reinforced by silica girdle bands.[web:20][web:23][web:49]  
+
+In **valve view** you see the face of a valve (disc, ellipse, boat, etc.); in **girdle view** you see the side, where the two valves and their girdle bands read as a box or cylinder.[web:23][web:50]
+
+At the gross level, diatoms fall into two big shape families:
+
+- **Centric diatoms** – radially symmetric, often circular or polygonal in valve view.[web:23][web:28]  
+- **Pennate diatoms** – bilaterally symmetric, often elongated or boat‑shaped in valve view.[web:23][web:28]
+
+Within those two families is a wild zoo of outlines, pore lattices, ribs, spines, and slits that can all be treated as geometry.
+
+---
+
+## Repository layout
+
+Planned structure (work in progress):
+
+- `docs/`
+  - `00_overview.md` – quick intro and terminology.
+  - `01_structure_frustule.md` – frustule architecture and parts.
+  - `02_morphology_taxonomy.md` – visual shape families + classical centric/pennate split.
+  - `03_math_models.md` – curves, symmetry, Fourier descriptors, toy models.
+  - `04_references.md` – papers, books, online keys, image resources.
+- `catalog/`
+  - `centric/` – disc / polygon / radiate / stellate valve families.
+  - `pennate/` – naviculoid, cymbelloid, gomphonemoid, sigmoid, ribbon‑forming, etc.
+- `images/`
+  - `raw/` – micrographs and SEM images (open license or original).
+  - `processed/` – crops, outlines, SVGs, binary masks.
+- `data/`
+  - `outlines/` – SVG or point clouds for outlines, plus descriptor tables.
+- `notebooks/`
+  - Analysis and visualization notebooks (outline extraction, EFDs, simple simulations).
+- `code/`
+  - `analysis/` – Python scripts for outline extraction, Fourier descriptors, measurements.
+  - `shaders/` – GLSL/WebGL sketches that generate diatom‑like forms.
+
+None of this is strict — the goal is to keep art, biology, and math in dialogue.
+
+---
+
+## What you can do here
+
+- Browse the **docs** to get a feel for frustule anatomy and shape language.
+- Explore the **catalog** as a visual field guide to centric and pennate forms.
+- Use the **data** and **notebooks** if you want to quantify outlines or build classifiers.
+- Play with the **shaders** if you want to generate diatom‑inspired textures and structures in real time.
+
+---
+
+## References & further reading (starter set)
+
+A few starting points that inform this repo:
+
+- Diatom structure overview – [Manaaki Whenua diatom structure guide](https://www.landcareresearch.co.nz/tools-and-resources/identification/diatoms/diatom-structure).[web:23]  
+- General diatom background – [Diatom](https://en.wikipedia.org/wiki/Diatom).[web:28]  
+- Frustule architecture – [Frustule](https://en.wikipedia.org/wiki/Frustule).[web:20]  
+- Morphology and keys – Phycokey’s morphology pages and common diatom keys.[web:22][web:31][web:49]  
+- Morphogenesis & function – review on frustule morphogenesis and function.[web:26]  
+- Geometry & modeling – work on diatom shape modeling and Gielis transformations / outline analysis.[web:24][web:54][web:33]
+
+See `docs/04_references.md` (eventually) for a more complete bibliography.
+
+---
+
+## License
+
+- **Code** – MIT (or similar, tbd).
+- **Text** – CC BY-SA (or similar, tbd).
+- **Images** – per‑image licenses specified in `images/` and/or catalog entries.
+
+This repository is not a formal taxonomic authority — it is an art‑science playground.
+```
+
+***
+
+## docs/00_overview.md
+
+```markdown
+# Overview
+
+This project treats diatoms as a space where **biology**, **geometry**, and **image‑making** collide.
+
+Diatoms are single‑celled microalgae with silica cell walls called **frustules** that carry species‑specific architectures of pores, ribs, and spines.[web:20][web:26]  
+They contribute an estimated 20–25% of global primary production, but here we are mostly obsessed with their shapes and the math behind them.[web:26][web:54]  
+
+From a distance, many diatoms read as simple discs or boats; under magnification they reveal complex, hierarchical patterns that behave like mechanical scaffolds and photonic lattices.[web:14][web:16][web:54]  
+
+---
+
+## Goals
+
+This repo aims to be:
+
+- A **visual field guide** to diatom forms – centric and pennate, plus sub‑families of outlines and ornamentation.[web:23][web:28]  
+- A **geometry notebook** – collecting ways to parameterize these shapes: symmetry, curves, elliptic Fourier descriptors, and more speculative models.[web:21][web:24][web:33]  
+- A **sandbox for code and shaders** – tools to extract outlines from images, measure shape features, and generate diatom‑like structures in GLSL or other media.[web:21][web:33]  
+
+It is explicitly not a formal identification manual or taxonomic revision, but it tries to stay close enough to the literature that the shapes are recognizable to phycologists.
+
+---
+
+## Big concepts
+
+A few anchors that recur throughout the repo:
+
+- **Frustule architecture** – valves, girdle bands, pores, raphe systems, spines.[web:20][web:23][web:51]  
+- **Viewpoints** – valve view vs girdle view; the same cell can appear as a disc, an ellipse, or a box depending on orientation.[web:23][web:49]  
+- **Shape families** – centric vs pennate; within each, recurring outlines (discs, polygons, rods, naviculoid boats, cymbelloid bananas, sigmoids, ribbons).[web:23][web:31][web:49]  
+- **Pattern scales** – coarse outline, mid‑scale rib/stria patterns, fine‑scale nanopore lattices.[web:14][web:26]  
+
+Each of these can be drawn, parameterized, and then abused in code.
+
+---
+
+## How to navigate
+
+- Start with `01_structure_frustule.md` if you want the anatomy vocabulary first.  
+- Jump to `02_morphology_taxonomy.md` if you just want to look at shapes and names.  
+- Go to `03_math_models.md` and the notebooks if you want equations and code.
+
+The catalog in `/catalog/` links back into these docs so each shape “family” has both a biological and mathematical context.
+```
+
+***
+
+## docs/01_structure_frustule.md
+
+```markdown
+# Frustule structure
+
+The diatom cell wall is a silica shell called a **frustule**, built from two overlapping halves plus a set of silica bands that link them together.[web:20][web:23][web:51]  
+Understanding this basic architecture makes it much easier to read microscope images and to design generative models of diatom shapes.
+
+---
+
+## Thecae (valves) and girdle
+
+The frustule is divided into two main parts:
+
+- **Valves (thecae)** – two rigid, plate‑like halves of the shell that overlap slightly.[web:20][web:28][web:51]  
+- **Girdle (cingulum)** – the banded region between the valves, made of multiple silica **girdle bands** (copulae) that hold the valves together like hoops around a barrel.[web:20][web:50][web:51]  
+
+The two valves are slightly different in size:
+
+- The **epitheca** is the slightly larger “lid” valve.  
+- The **hypotheca** is the slightly smaller “base” valve that fits under the epitheca.[web:20][web:28][web:51]
+
+During cell division, each daughter cell keeps one old valve and builds one new one, which is why one lineage tends to get progressively smaller until it resets via an auxospore stage.[web:20][web:26]
+
+---
+
+## Valve view vs girdle view
+
+Because the frustule is a 3D box or cylinder, diatoms look very different depending on orientation:
+
+- **Valve view** – looking straight at a valve face; you see the outline (disc, ellipse, boat, etc.) and the radial or axial arrangement of striae and pores.[web:23][web:49]  
+- **Girdle view** – looking at the side of the frustule; you see a box or banded cylinder with the two valves at the ends and the girdle bands in between.[web:23][web:50][web:51]  
+
+Many keys and morphological descriptions specify which view they are talking about, so this repo does the same; generative models may explicitly target one view at a time.
+
+---
+
+## Surface features
+
+Valve and girdle surfaces are perforated and sculpted in species‑specific ways:
+
+- **Areolae** – individual pores that pass through the silica; often arranged into rows.[web:20][web:52]  
+- **Striae** – lines or rows of areolae, usually visible in light microscopy as fine lines.[web:23][web:49]  
+- **Costae and ribs** – thicker silica bars between rows of pores, reading as radiating spokes or axial ribs.[web:49][web:52]  
+- **Spines and marginal processes** – protrusions that help link cells into chains or influence fluid interactions.[web:14][web:26]  
+
+At nanoscales, areolae and related openings can form ordered lattices with pore diameters on the order of a few hundred nanometres, which strongly affect optical and mechanical behaviour.[web:14][web:20][web:26]
+
+---
+
+## Raphe and motility (pennate special)
+
+Many pennate diatoms have a **raphe**, a slit‑like structure that runs along the valve and secretes mucilage for gliding motility.[web:23][web:50][web:52]  
+
+Key points:
+
+- Some genera have raphes on both valves (e.g., *Navicula*), some on one, some on neither.[web:23]  
+- The raphe can be central, marginal, or traverse onto the valve mantle; canal raphes sit within a channel supported by silica bridges (fibulae).[web:50][web:52]  
+- Raphe architecture (length, curvature, interruptions, position) is a crucial taxonomic feature and also a beautiful curve motif for generative models.[web:23][web:31][web:50]
+
+In shape terms, the raphe is often an axial curve that suggests a natural coordinate system for parameterizing the rest of the valve.
+
+---
+
+## Centric vs pennate architecture
+
+The same structural vocabulary plays out differently in centric and pennate diatoms:
+
+- **Centric diatoms**
+  - Valve outline typically circular, polygonal, or cylindrical in valve view.[web:23][web:28]  
+  - Striae and ribs are arranged radially or in concentric rings around a centre or annulus.[web:23][web:25]  
+  - Often lack a raphe; movement is typically passive or chain‑based.[web:23][web:28]
+
+- **Pennate diatoms**
+  - Valve outline typically elongated and bilaterally symmetric in valve view (naviculoid boats, cymbelloid bananas, sigmoids, etc.).[web:23][web:28][web:31]  
+  - Ornamentation organized along an apical axis, with or without a raphe system; axial and central areas are key landmarks.[web:31][web:52]  
+
+This repo leans into that architecture when grouping shapes in the catalog and when designing parametric models.
+
+---
+
+## Why structure matters for math and art
+
+The frustule’s hierarchical structure — outline, ribs, pores, nano‑lattices — is where geometry and function meet:
+
+- Biologically, these structures relate to mechanical protection, buoyancy, filtering, and sophisticated light manipulation.[web:14][web:16][web:18][web:54]  
+- Geometrically, they provide nested symmetry operations, repeat units, and feature scales that can be captured in curves, tilings, and texture synthesis.[web:24][web:26][web:54]  
+
+When building generative diatom forms in code or shaders, this doc is the checklist of which structural elements you want to honour, exaggerate, or break.
+```
+
+***
+
+If you’d like, next I can draft `02_morphology_taxonomy.md` (visual shape families) and a template for one `catalog/` entry (e.g., a classic centric disc and a boat‑shaped pennate) so you can start the “atlas” section.
+
+Here’s a diatom‑atlas repo layout with descriptive file names and what each should contain, tuned for visuals + math + catalog. You can pare this down if it feels too big. [en.wikipedia](https://en.wikipedia.org/wiki/Frustule)
+
+***
+
+## Top level
+
+- `README.md`  
+  - High‑level overview of the project, what diatoms are, and why this repo exists.  
+  - Links to the main docs sections, catalog, code, and notebooks.  
+  - A couple of teaser images or renders and a short “how to navigate”.
+
+- `LICENSE`  
+  - License for the code and text (e.g., MIT for code, CC BY‑SA for docs).  
+  - State that images have per‑file licenses described in `images/` and catalog pages.
+
+- `CONTRIBUTING.md` (optional but nice)  
+  - How people can add new shapes, outlines, or shaders.  
+  - Naming conventions for files, how to cite sources, and how to document image licenses.
+
+***
+
+## docs/ — core concepts and references
+
+- `docs/00_overview.md`  
+  - Short intro to diatoms, frustules, and why their shapes are interesting.  
+  - Plain‑language summary of the project goals: visual atlas + math + code.  
+
+- `docs/01_structure_frustule.md`  
+  - Anatomy of the frustule: valves (epitheca/hypotheca), girdle bands, areolae, striae, raphe, spines. [landcareresearch.co](https://www.landcareresearch.co.nz/tools-and-resources/identification/diatoms/diatom-structure)
+  - Valve view vs girdle view, simple diagrams or references to images.  
+  - How this structure shows up in images and how you’ll map it into geometry.
+
+- `docs/02_morphology_and_shape_families.md`  
+  - Centric vs pennate diatoms, with concise definitions. [en.wikipedia](https://en.wikipedia.org/wiki/Diatom)
+  - A list of visual “shape families” with sketches: discs, polygons, naviculoid boats, cymbelloid bananas, gomphonemoid clubs, sigmoids, ribbons, chains.  
+  - For each family: outline description, typical symmetry, and a few example genera.
+
+- `docs/03_math_and_geometry_models.md`  
+  - Ways to describe diatom outlines and patterns mathematically:  
+    - Parametric curves for outlines (circles, ellipses, naviculoid curves, sigmoids).  
+    - Symmetry types (radial, bilateral, translational) and how they map to centric vs pennate forms. [bioengineering.hyperbook.mcgill](https://bioengineering.hyperbook.mcgill.ca/mathematical-models-of-diatoms-understanding-their-complex-shape-reproduction-and-chain-formation/)
+    - Elliptic Fourier descriptors and other outline descriptors, with links to notebooks. [pmc.ncbi.nlm.nih](https://pmc.ncbi.nlm.nih.gov/articles/PMC6487182/)
+    - Brief notes on hierarchical/fractal structure and photonic/mechanical models as inspiration, not full derivations. [sciencedirect](https://www.sciencedirect.com/science/article/abs/pii/S1874778717301265)
+
+- `docs/04_catalog_conventions.md`  
+  - How catalog entries are structured (common sections, required fields).  
+  - Naming pattern: `shape_family__short_name.md` or `genus_species.md`.  
+  - What metadata to include: view (valve/girdle), magnification, source, license, outline data file references.
+
+- `docs/05_references_and_resources.md`  
+  - Bibliography of key papers and books on diatom structure, morphology, and modeling. [en.wikipedia](https://en.wikipedia.org/wiki/Frustule)
+  - Links to online keys, glossaries, and image resources (e.g., Phycokey, institutional guides).  
+  - Notes on which resources are open access / reusable for images.
+
+***
+
+## catalog/ — shape atlas
+
+Think of `catalog/` as the visual/morphological core.
+
+- `catalog/README.md`  
+  - Explains how to read catalog entries.  
+  - Index of main shape families with links (e.g., “Centric discs”, “Naviculoid pennates”).
+
+- `catalog/centric/README.md`  
+  - Quick explanation of centric diatoms and how you’re grouping them visually. [ucl.ac](https://www.ucl.ac.uk/GeolSci/micropal/diatom.html)
+
+- Example centric pages:
+
+  - `catalog/centric/disc_radiate_valve_view.md`  
+    - Focus: circular discs with radial striae (e.g., *Coscinodiscus*-like).  
+    - Sections: visual description, frustule/valve features, typical size range, example genera/species, image thumbnails, links to outline data and shaders.  
+
+  - `catalog/centric/polygonal_and_stellate_valves.md`  
+    - Hexagonal, triangular, starburst forms.  
+    - Same structure as above, plus a note on symmetry order and how many “points”.
+
+  - `catalog/centric/cylindrical_chain_formers.md`  
+    - Centric diatoms forming chains in girdle view (e.g., *Melosira*‑type).  
+    - Emphasis on girdle‑view geometry and chain morphology.
+
+- `catalog/pennate/README.md`  
+  - Quick overview of pennate diatoms and major outline families. [scholarworks.uni](https://scholarworks.uni.edu/cgi/viewcontent.cgi?params=%2Fcontext%2Fistj%2Farticle%2F1834%2F&path_info=09_diatoms_part_4.pdf)
+
+- Example pennate pages:
+
+  - `catalog/pennate/naviculoid_boat_shapes.md`  
+    - Elongated, naviculoid (boat‑shaped) valves with central raphe systems.  
+    - Outline description, raphe features, axial/central areas, example genera like *Navicula*/*Nitzschia* (not as a formal key, just “vibes”). [researcharchive.calacademy](https://researcharchive.calacademy.org/research/diatoms/overview/glossary.html)
+
+  - `catalog/pennate/cymbelloid_banana_shapes.md`  
+    - Asymmetric banana‑like valves (e.g., *Cymbella*‑type).  
+    - Describe curvature, dorsal/ventral sides, offset axes, typical habitat notes.
+
+  - `catalog/pennate/sigmoid_and_wavy_axes.md`  
+    - Curved and sigmoid taxa, emphasizing the central curve shape.  
+    - Good place to link to math models of sigmoidal centerlines.
+
+  - `catalog/pennate/ribbon_and_filamentous_forms.md`  
+    - Long chains/ribbons in girdle view; discuss how single‑cell valve outlines differ from the aggregate ribbon.
+
+- Optional species‑oriented pages:
+
+  - `catalog/species/navicula_sp_example_profile.md`  
+    - One specific, well‑documented species: SEM/light images (if allowed), dimensions, key features, outline data, references.  
+    - Template others can clone if they want species‑level profiles.
+
+Each catalog page should have pointers to:
+
+- `images/` (micrographs, SEMs, or your renders).  
+- `data/outlines/` (SVG/JSON/CSV for that shape).  
+- `code/shaders/` or notebooks that generate or analyze that shape.
+
+***
+
+## images/ — visual material
+
+- `images/README.md`  
+  - Notes on image sources, how licenses are tracked, and naming conventions.  
+  - Example of how to credit an image inside catalog docs.
+
+- `images/raw/`  
+  - Original micrographs / SEMs (only if you have permission or they are open‑licensed).  
+  - Filenames like `centric_disc_sem_source-id.jpg` with a sidecar text or JSON file if you want to store metadata separately.
+
+- `images/processed/`  
+  - Cropped, contrast‑adjusted images focused on a single diatom.  
+  - Binary masks and outline overlays for the same cells, e.g., `naviculoid_boat_01_outline.png`.
+
+- `images/renders/`  
+  - Your generative art / shader outputs that correspond to catalog entries.  
+  - Useful to show side‑by‑side with real micrographs in the docs.
+
+***
+
+## data/ — outlines and measurements
+
+- `data/outlines/README.md`  
+  - How outline files are structured and how to interpret them.  
+  - Any coordinate conventions (normalized radius, pixel coordinates, mm, etc.).
+
+- `data/outlines/<shape_name>.svg`  
+  - Clean vector outlines of valve shapes (one or more per file).  
+  - Used both as documentation and as source data for math notebooks.
+
+- `data/outlines/<shape_name>.csv` or `.json`  
+  - Sampled contour points (x, y) along the valve outline, maybe with normalized arc length.  
+  - Optional columns for local curvature, distance from centre line, etc.
+
+- `data/descriptors/<shape_name>_efd_coefficients.csv`  
+  - Elliptic Fourier descriptor coefficients and any other numeric shape descriptors for that outline set. [bsapubs.onlinelibrary.wiley](https://bsapubs.onlinelibrary.wiley.com/doi/pdfdirect/10.1002/aps3.1204)
+
+- `data/measurements/` (optional)  
+  - Tables with length, width, aspect ratio, pore spacing, symmetry measures for outlines you’ve processed.
+
+***
+
+## notebooks/ — analysis and modeling
+
+- `notebooks/01_outline_extraction_from_image.ipynb`  
+  - Example pipeline: load a raw micrograph, preprocess, threshold, extract main contour, save SVG/points.  
+  - Demonstrates reproducible steps for going from image → outline. [pmc.ncbi.nlm.nih](https://pmc.ncbi.nlm.nih.gov/articles/PMC6487182/)
+
+- `notebooks/02_elliptic_fourier_descriptors.ipynb`  
+  - Take an outline file, compute elliptic Fourier descriptors, and reconstruct the shape with different harmonic counts. [bsapubs.onlinelibrary.wiley](https://bsapubs.onlinelibrary.wiley.com/doi/pdfdirect/10.1002/aps3.1204)
+  - Visual overlays of original vs reconstructed outlines.
+
+- `notebooks/03_shape_family_space.ipynb`  
+  - Load multiple outlines, compute descriptors, plot them in PCA or some low‑dimensional space to show clustering between shape families. [mdpi](https://www.mdpi.com/2073-8994/12/10/1626/pdf)
+
+- `notebooks/04_toy_photonic_or_mechanical_models.ipynb` (optional, deep‑dive)  
+  - Very simple toy models: e.g., approximating a pore lattice as a 2D photonic crystal or a beam network, purely qualitative but inspired by real work on diatom mechanics and optics. [pmc.ncbi.nlm.nih](https://pmc.ncbi.nlm.nih.gov/articles/PMC8282634/)
+
+***
+
+## code/ — analysis utilities and shaders
+
+- `code/analysis/README.md`  
+  - Brief description of the tools here and how to run them (e.g., `python extract_outline.py input.png output.svg`).  
+
+- `code/analysis/extract_outline_from_image.py`  
+  - Command‑line or simple script counterpart to the outline extraction notebook.  
+  - Takes an image file, runs preprocessing and contour detection, outputs SVG/CSV.
+
+- `code/analysis/compute_efd_descriptors.py`  
+  - Takes an outline file, computes elliptic Fourier descriptors, and writes them into `data/descriptors/`. [pmc.ncbi.nlm.nih](https://pmc.ncbi.nlm.nih.gov/articles/PMC6487182/)
+
+- `code/analysis/measure_basic_morphometrics.py`  
+  - Aspect ratio, curvature stats, symmetry metrics (e.g., asymmetric vs symmetric components). [mdpi](https://www.mdpi.com/2073-8994/12/10/1626/pdf)
+
+- `code/shaders/README.md`  
+  - How to run the shaders (e.g., with Shadertoy‑style harness, WebGL viewer, or your own framework).  
+  - Mapping between shader names and catalog entries.
+
+- Example shader files:
+
+  - `code/shaders/centric_disc_radiate.frag`  
+    - GLSL shader that generates a radially symmetric disc with striae and pores; references `catalog/centric/disc_radiate_valve_view.md`.
+
+  - `code/shaders/pennate_naviculoid_boat.frag`  
+    - Shader approximating a naviculoid boat shape with a central raphe and axial area.
+
+  - `code/shaders/pennate_sigmoid_curve.frag`  
+    - Shader using a sinusoidal centerline and variable width to emulate sigmoid pennates.
+
+- Optionally a small web viewer:
+
+  - `code/viewer/webgl_diatom_viewer.html`  
+  - `code/viewer/webgl_diatom_viewer.js`  
+    - Minimal HTML/JS to browse through shaders in the browser.
+
+***
+
+## .github/ — meta
+
+- `.github/ISSUE_TEMPLATE/shape_entry.md`  
+  - Template for proposing a new catalog entry (shape description, images, outline data, references).  
+
+- `.github/workflows/ci.yml` (optional)  
+  - Linting or basic tests on code, maybe a small check that data files are parsable.
+
+***
+
+If you want, I can next turn this into a minimal actual `tree` plus stub content for the most important files so you can just create them and commit.
+
+Here’s a concrete minimal structure plus stub content you can drop in and start committing. You can of course rename/trim as you like. [en.wikipedia](https://en.wikipedia.org/wiki/Frustule)
+
+***
+
+## Minimal tree
+
+```text
+diatomic/
+  README.md
+  LICENSE
+  CONTRIBUTING.md
+
+  docs/
+    00_overview.md
+    01_structure_frustule.md
+    02_morphology_and_shape_families.md
+    03_math_and_geometry_models.md
+    04_catalog_conventions.md
+    05_references_and_resources.md
+
+  catalog/
+    README.md
+    centric/
+      README.md
+      disc_radiate_valve_view.md
+    pennate/
+      README.md
+      naviculoid_boat_shapes.md
+
+  images/
+    README.md
+    raw/.gitkeep
+    processed/.gitkeep
+    renders/.gitkeep
+
+  data/
+    outlines/
+      README.md
+    descriptors/
+      README.md
+
+  notebooks/
+    01_outline_extraction_from_image.ipynb
+    02_elliptic_fourier_descriptors.ipynb
+
+  code/
+    analysis/
+      README.md
+      extract_outline_from_image.py
+      compute_efd_descriptors.py
+    shaders/
+      README.md
+      centric_disc_radiate.frag
+      pennate_naviculoid_boat.frag
+```
+
+The `.ipynb` and `.py` files can start as empty placeholders or with a comment header; the important part right now is the Markdown stubs.
+
+***
+
+## Top-level files
+
+### `README.md`
+
+```markdown
+# DIATOMIC
+
+A visual and mathematical atlas of diatoms — tiny silica architectures with outrageous symmetry, pattern, and micro‑geometry.
+
+Diatoms are unicellular microalgae whose cell wall is a glassy silica shell called a **frustule**, built from two overlapping valves (epitheca and hypotheca) and a set of girdle bands that link them together.[web:20][web:23][web:28]  
+
+This repo focuses on:
+
+- **Visual structure** – frustules, valves, girdle bands, pores, spines.
+- **Morphology & shape families** – centric vs pennate, discs, boats, ribbons, sigmoids.[web:23][web:49]
+- **Math & generative models** – parametric outlines, symmetry, elliptic Fourier descriptors, toy photonic/mechanical ideas.[web:21][web:24][web:26]
+- **A catalog of forms** – curated examples with outlines, references, and code hooks.
+
+---
+
+## Structure
+
+- `docs/` – concepts: frustule structure, shape families, math models, catalog conventions, references.
+- `catalog/` – visual atlas grouped into centric and pennate shape families.
+- `images/` – real micrographs / SEMs (where allowed) and generative renders.
+- `data/` – outlines, descriptors, and measurements tied to catalog entries.
+- `notebooks/` – Jupyter notebooks for outline extraction, Fourier descriptors, and toy models.
+- `code/` – analysis utilities and shaders that generate diatom‑like forms.
+
+---
+
+## Getting started
+
+1. Read `docs/00_overview.md` and `docs/01_structure_frustule.md` for anatomy and terminology.
+2. Browse `catalog/` to see shape families and example images.
+3. Open `notebooks/` if you want to play with outlines and descriptors.
+4. Dive into `code/shaders/` if you want to generate diatom‑inspired visuals in GLSL.
+
+---
+
+## Status
+
+Early days. Expect stubs, TODOs, and shifting structure while the atlas and math pieces grow.
+
+---
+
+## License
+
+- **Code** – MIT (proposed, tbd).
+- **Docs** – CC BY‑SA (proposed, tbd).
+- **Images** – per‑image licenses documented in `images/` and catalog pages.
+```
+
+***
+
+### `LICENSE`
+
+```text
+TODO: Choose and add licenses.
+
+Suggested:
+- MIT License for code.
+- Creative Commons Attribution-ShareAlike (CC BY-SA) for documentation.
+- Per-image licenses for images (noted alongside each file and in catalog entries).
+```
+
+***
+
+### `CONTRIBUTING.md`
+
+```markdown
+# Contributing
+
+This project is an art–science sandbox for diatom shapes, structure, and math.
+
+## Ways to contribute
+
+- Add a new **shape family** page under `catalog/centric` or `catalog/pennate`.
+- Add a **species profile** with images, outlines, and references.
+- Add an **outline dataset** under `data/outlines` and corresponding descriptors.
+- Add a **notebook** or **shader** that analyzes or generates diatom‑like forms.
+
+## Style & conventions
+
+- Use descriptive filenames, e.g. `disc_radiate_valve_view.md`, `naviculoid_boat_shapes.md`.
+- In catalog entries, include:
+  - A short visual description.
+  - Notes on structure and anatomy.
+  - Links to data files, images, and any relevant code.
+  - References to the literature or keys where similar forms are described.[web:23][web:31][web:49]
+- Document image sources and licenses clearly.
+
+## Process
+
+1. Fork the repo.
+2. Create or edit files in a logically small change set.
+3. Include references where you make biological or mathematical claims.
+4. Open a pull request with a brief description and, if relevant, example images.
+```
+
+***
+
+## docs/ stubs
+
+### `docs/00_overview.md`
+
+```markdown
+# Overview
+
+Diatoms are single‑celled microalgae with silica cell walls called **frustules** that carry species‑specific architectures of pores, ribs, and spines.[web:20][web:26]  
+They account for a large fraction of global primary production, but here the focus is on their **visual structure** and **geometry** rather than ecology.[web:26][web:54]  
+
+This project treats diatoms as a space where **biology**, **math**, and **image‑making** collide.
+
+---
+
+## Goals of this repository
+
+- Build a **visual atlas** of diatom shape families (centric and pennate).
+- Collect **mathematical descriptions** of diatom outlines and patterns.
+- Provide **data and code** for extracting, measuring, and generating diatom‑like forms.
+- Serve as a bridge between microscope imagery, generative art, and formal morphology.
+
+See:
+
+- `01_structure_frustule.md` for anatomy.
+- `02_morphology_and_shape_families.md` for the shape taxonomy used in the catalog.
+- `03_math_and_geometry_models.md` for modeling approaches.
+```
+
+***
+
+### `docs/01_structure_frustule.md`
+
+```markdown
+# Frustule structure
+
+The diatom cell wall is a silica shell called a **frustule**, built from two overlapping valves and a banded girdle region.[web:20][web:23][web:51]  
+Understanding this architecture is the basis for how shapes are grouped and modeled in this repo.
+
+---
+
+## Valves and girdle
+
+- **Valves (thecae)** – two rigid plates that overlap like a petri dish:
+  - **Epitheca** – slightly larger "lid".
+  - **Hypotheca** – slightly smaller "base".[web:20][web:28][web:51]
+- **Girdle (cingulum)** – series of silica **girdle bands** that encircle the cell and connect the valves.[web:20][web:50][web:51]
+
+During cell division, each daughter cell inherits one old valve and builds one new one, leading to progressive size reduction until a size‑resetting auxospore stage.[web:20][web:26]
+
+---
+
+## Valve view vs girdle view
+
+Diatoms look very different depending on orientation:
+
+- **Valve view** – looking straight at a valve face; shows the outline (disc, ellipse, boat, etc.) and arrangement of striae and pores.[web:23][web:49]
+- **Girdle view** – looking at the side; shows the depth of the frustule and stacked girdle bands.[web:23][web:50]
+
+Catalog entries explicitly state which view images and outlines correspond to.
+
+---
+
+## Surface features
+
+Common features referenced in the catalog:
+
+- **Areolae** – pores perforating the silica.[web:20][web:52]
+- **Striae** – rows of areolae; often the main visible texture in light microscopy.[web:23][web:49]
+- **Ribs / costae** – thicker silica bars between pores.[web:49][web:52]
+- **Spines & processes** – protrusions that can link cells into chains or affect hydrodynamics.[web:14][web:26]
+
+Nanometre‑scale pore lattices and sub‑structures give frustules unusual optical and mechanical properties and are an inspiration for some of the math and shaders.[web:14][web:16][web:54]
+```
+
+***
+
+### `docs/02_morphology_and_shape_families.md`
+
+```markdown
+# Morphology and shape families
+
+Classical diatom morphology divides forms into **centric** and **pennate** based largely on symmetry and outline.[web:23][web:28][web:49]  
+This repo overlays a more visual “shape family” taxonomy on top of that to organize the catalog.
+
+---
+
+## Centric vs pennate
+
+- **Centric diatoms**
+  - Radial or rotational symmetry in valve view.
+  - Outlines: discs, polygons, sometimes elongate cylinders in girdle view.
+  - Ornamentation arranged radially or in concentric patterns.[web:23][web:25]
+
+- **Pennate diatoms**
+  - Bilateral symmetry along a long axis in valve view (sometimes with asymmetry about a second axis).
+  - Outlines: naviculoid boats, cymbelloid bananas, gomphonemoid clubs, sigmoids, ribbons.[web:23][web:31][web:49]
+  - Ornamentation organized along an apical axis, often with a raphe system.[web:31][web:52]
+
+---
+
+## Shape families used here
+
+Examples of shape families used for catalog grouping:
+
+- **Centric / disc radiate** – near‑circular valves with radial striae.
+- **Centric / polygonal & stellate** – triangular, hexagonal, starburst outlines.
+- **Centric / cylindrical chain formers** – cylinders forming chains in girdle view.
+
+- **Pennate / naviculoid boats** – elongated, pointed ends, central raphe.
+- **Pennate / cymbelloid bananas** – curved “banana” outlines with dorsal/ventral asymmetry.
+- **Pennate / sigmoid and wavy** – S‑shaped or gently sinuous axes.
+- **Pennate / ribbon‑forming** – long chains or bands in girdle view.
+
+Each catalog page under `catalog/centric` or `catalog/pennate` states which family it belongs to, the view (valve/girdle), and the key visual decisions behind that grouping.
+```
+
+***
+
+### `docs/03_math_and_geometry_models.md`
+
+```markdown
+# Math and geometry models
+
+This document sketches the mathematical tools used to describe and generate diatom forms.
+
+---
+
+## Outlines as curves
+
+Valve outlines can be treated as closed planar curves:
+
+- Simple shapes (circles, ellipses) model centric discs and elongated rods.
+- More complex curves model naviculoid, cymbelloid, and sigmoid outlines:
+  - A centerline curve plus a width function mirrored across a midline is a natural way to represent many pennate forms.[web:24][web:30]
+
+---
+
+## Symmetry
+
+Key symmetry types:
+
+- **Radial / rotational** – centric discs and stars.
+- **Bilateral** – pennate forms with a single mirror axis.
+- **Translational / chain** – ribbon‑forming or chain‑forming taxa in girdle view.[web:24][web:47]
+
+These symmetries guide both outline parameterizations and pattern tilings in shaders.
+
+---
+
+## Elliptic Fourier descriptors (EFDs)
+
+Elliptic Fourier descriptors are used in the literature to encode diatom valve outlines and compare shapes quantitatively.[web:21][web:33]  
+
+Here they serve to:
+
+- Compress outlines from `data/outlines/` into a small set of coefficients.
+- Reconstruct outlines at different harmonic counts in notebooks.
+- Map multiple shapes into a low‑dimensional “shape space”.
+
+See `notebooks/02_elliptic_fourier_descriptors.ipynb` for a worked example.
+
+---
+
+## Hierarchy and pattern
+
+Frustules have nested structure (outline → ribs → pores → nanopores), and several reviews discuss links between morphology, mechanics, and optics.[web:14][web:26][web:54]  
+
+In this repo, we treat this hierarchy as:
+
+- A design pattern for multi‑layer shaders and textures.
+- A prompt for toy models of light scattering or mechanical stiffness, not full physical simulations.
+
+Details live in the notebooks and shader comments rather than here.
+```
+
+***
+
+### `docs/04_catalog_conventions.md`
+
+```markdown
+# Catalog conventions
+
+The `catalog/` directory is a visual atlas organized by shape family rather than strict taxonomy.
+
+---
+
+## File naming
+
+- Shape‑family pages:
+  - `catalog/centric/disc_radiate_valve_view.md`
+  - `catalog/pennate/naviculoid_boat_shapes.md`
+- If you add species‑level pages, use:
+  - `catalog/species/genus_species_name.md`
+
+---
+
+## Minimum sections for a catalog page
+
+Each catalog page should include:
+
+- **Shape family & view** – e.g. "Centric disc, valve view".
+- **Visual description** – outline, symmetry, main surface features.
+- **Structural notes** – any anatomy that matters (raphe, axially defined areas, chains).[web:23][web:31]
+- **Images** – links to files under `images/` with sources and licenses.
+- **Outline & data** – references to files under `data/outlines/` and `data/descriptors/`.
+- **Code hooks** – pointers to relevant notebooks or shaders if they exist.
+- **References** – at least one link to the literature or a key that shows similar forms.[web:22][web:31][web:49]
+```
+
+***
+
+### `docs/05_references_and_resources.md`
+
+```markdown
+# References and resources
+
+A growing list of references that inform this project.
+
+---
+
+## Structure and morphology
+
+- Diatom structure – Manaaki Whenua diatom structure guide.[web:23]
+- General diatom overview – Diatom and frustule entries.[web:28][web:20]
+- Morphology and keys – Phycokey and related morphology/identification guides.[web:22][web:31][web:49]
+- Glossary – California Academy of Sciences diatom glossary.[web:52]
+
+---
+
+## Morphogenesis, mechanics, optics
+
+- Frustule morphogenesis and function: multidisciplinary review.[web:26]
+- Frustule structure and light manipulation, including photonic crystal analogies.[web:14][web:16][web:54]
+
+---
+
+## Shape and modeling
+
+- Elliptic Fourier descriptors and outline analysis for diatom identification.[web:21][web:33]
+- Mathematical and computational models of diatom shape and population structure.[web:24][web:30]
+
+More will be added as catalog and modeling work grows.
+```
+
+***
+
+## catalog/ stubs
+
+### `catalog/README.md`
+
+```markdown
+# Catalog
+
+This directory is the visual atlas portion of the project.
+
+- `centric/` – shape families with radial or rotational symmetry in valve view.
+- `pennate/` – shape families with bilateral or related symmetries.
+
+Each page describes:
+
+- A **shape family** (outline + symmetry).
+- The **view** (valve or girdle).
+- Structural notes and example taxa.
+- Pointers to images, outline data, and code.
+
+This is intentionally not a formal identification key, but it should be anchored enough in real morphology that phycologists can recognize what is being referenced.[web:23][web:31][web:49]
+```
+
+***
+
+### `catalog/centric/README.md`
+
+```markdown
+# Centric catalog
+
+Centric diatoms typically have radial or rotational symmetry in valve view, with silica ribs and striae radiating from a centre or annulus.[web:23][web:25]  
+
+Here, shape families are defined visually (disc, polygon, stellate, cylindrical chain formers) rather than by formal taxonomy.
+
+See:
+
+- `disc_radiate_valve_view.md` – classic radiate discs.
+```
+
+***
+
+### `catalog/centric/disc_radiate_valve_view.md`
+
+```markdown
+# Centric disc – radiate (valve view)
+
+**Family:** Centric  
+**View:** Valve view
+
+---
+
+## Visual description
+
+Near‑circular valves with:
+
+- A central region (often an areolated centre or annulus).
+- Striae or ribs radiating outward in a roughly radial pattern.
+- Pores arranged along striae, sometimes forming a fine lattice.[web:23][web:25]
+
+This is the archetypal “sunburst disc” diatom look.
+
+---
+
+## Structural notes
+
+Typical features to look for:
+
+- Clear separation between central area and peripheral region.
+- Radial striae that may be uniseriate or multiseriate.
+- Marginal spines or processes in some taxa that promote chain formation.[web:25][web:26]
+
+---
+
+## Example taxa (informal)
+
+Not a formal ID, but visually similar forms occur in genera such as:
+
+- *Coscinodiscus* and related disc‑like centrics.
+- Other centric planktonic forms with radiate valve ornamentation.[web:25][web:34]
+
+---
+
+## Data and code
+
+- Outlines: TODO – add SVG and point data under `data/outlines/centric_disc_*`.
+- Descriptors: TODO – add EFD coefficients under `data/descriptors/`.
+- Shaders: see `code/shaders/centric_disc_radiate.frag` (when implemented).
+
+---
+
+## References
+
+- Centric disc morphology and examples in teaching keys and image guides.[web:22][web:25][web:34]
+```
+
+***
+
+### `catalog/pennate/README.md`
+
+```markdown
+# Pennate catalog
+
+Pennate diatoms typically have elongated, bilaterally symmetric valves with ornamentation organized along a long axis, often with a raphe system.[web:23][web:31][web:52]  
+
+Shape families here include naviculoid boats, cymbelloid bananas, sigmoids, ribbon‑forming forms, and more.
+
+See:
+
+- `naviculoid_boat_shapes.md` – classic boat‑shaped pennates with central raphes.
+```
+
+***
+
+### `catalog/pennate/naviculoid_boat_shapes.md`
+
+```markdown
+# Pennate – naviculoid boat shapes
+
+**Family:** Pennate  
+**View:** Valve view
+
+---
+
+## Visual description
+
+Elongated valves with:
+
+- Tapered, often slightly capitate ends.
+- A central axis with a raphe system and axial/central areas.
+- Bilateral symmetry along the long axis (mirror left/right).[web:31][web:52]
+
+These are the “boat‑shaped” pennates that many people picture when they think of diatoms.
+
+---
+
+## Structural notes
+
+Common features:
+
+- A straight or gently curved raphe running almost full‑length.
+- Central area where the raphe is expanded or deflected.
+- Striae radiating or oblique from the axial area to the margins.[web:31][web:52]
+
+Minor variations in outline curvature, pole shape, and raphe structure correspond to different genera and species.
+
+---
+
+## Example taxa (informal)
+
+Naviculoid shapes occur in genera such as:
+
+- *Navicula* and related biraphid pennates.
+- Other genera with similar boat‑like outlines and central raphes.[web:31]
+
+---
+
+## Data and code
+
+- Outlines: TODO – add SVG and point data under `data/outlines/naviculoid_boat_*`.
+- Descriptors: TODO – add EFD coefficients under `data/descriptors/`.
+- Shaders: see `code/shaders/pennate_naviculoid_boat.frag` (when implemented).
+
+---
+
+## References
+
+- Pennate morphology and naviculoid outlines in diatom identification guides.[web:31][web:49][web:52]
+```
+
+***
+
+## images/ stubs
+
+### `images/README.md`
+
+```markdown
+# Images
+
+This directory contains:
+
+- **raw/** – original micrographs and SEM images (only where license allows reuse).
+- **processed/** – cropped / contrast‑enhanced versions and binary masks.
+- **renders/** – generative renders based on shaders or other models.
+
+For each image, record:
+
+- Source (paper, collection, your own, etc.).
+- License and any attribution requirements.
+- Link to the relevant catalog entry and data files.
+
+Image filenames should be descriptive and, where possible, include the shape family, view (valve/girdle), and a short source tag.
+```
+
+***
+
+## data/ stubs
+
+### `data/outlines/README.md`
+
+```markdown
+# Outlines
+
+Vector and sampled outlines for shapes referenced in the catalog.
+
+Each outline should have:
+
+- A human‑readable name (matching catalog and shader names where possible).
+- A vector representation (`.svg`) and/or sampled points (`.csv` or `.json`).
+- Coordinate system documented (e.g. normalized to [0,1], pixel coordinates, etc.).
+
+These files are used in notebooks and analysis scripts to compute descriptors and perform shape comparisons.
+```
+
+### `data/descriptors/README.md`
+
+```markdown
+# Descriptors
+
+Numeric descriptors for outlines, such as:
+
+- Elliptic Fourier descriptor coefficients.[web:21][web:33]
+- Basic morphometrics (length, width, aspect ratio, curvature stats).
+- Symmetry measures where relevant.[web:47]
+
+Each descriptor file should reference:
+
+- The source outline file(s).
+- The method and parameters used to compute the descriptors.
+```
+
+***
+
+## code/ stubs
+
+### `code/analysis/README.md`
+
+```markdown
+# Analysis utilities
+
+Python tools for:
+
+- Extracting outlines from images.
+- Computing elliptic Fourier descriptors.
+- Measuring basic morphometrics.
+
+These scripts mirror the workflows shown in the notebooks but as reusable components.
+```
+
+### `code/analysis/extract_outline_from_image.py`
+
+```python
+"""
+Extract the main diatom outline from an image.
+
+TODO:
+- Load a grayscale or RGB image.
+- Preprocess (denoise, enhance contrast).
+- Threshold / segment the diatom.
+- Extract the largest closed contour.
+- Save outline as SVG and/or CSV for use in `data/outlines/`.
+"""
+```
+
+### `code/analysis/compute_efd_descriptors.py`
+
+```python
+"""
+Compute elliptic Fourier descriptors (EFDs) for one or more outlines.
+
+TODO:
+- Load outline points from SVG / CSV.
+- Normalize for translation, rotation, and scale if desired.
+- Compute EFD coefficients.
+- Save coefficients into `data/descriptors/` with metadata.
+
+Based on methods used in diatom outline analysis literature.
+"""
+```
+
+### `code/shaders/README.md`
+
+```markdown
+# Shaders
+
+GLSL fragments that generate diatom‑inspired forms.
+
+Planned examples:
+
+- `centric_disc_radiate.frag` – radiate centric disc in valve view.
+- `pennate_naviculoid_boat.frag` – boat‑shaped pennate with central raphe.
+
+Each shader should:
+
+- State which catalog entry it corresponds to.
+- Declare what structural features it tries to include (outline, striae, pores, etc.).
+- Be runnable in a generic fragment‑shader playground or a simple WebGL harness.
+```
+
+***
+
+### `code/shaders/centric_disc_radiate.frag`
+
+```glsl
+// Centric radiate disc – placeholder
+// Corresponds to catalog/centric/disc_radiate_valve_view.md
+
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+uniform vec2 iResolution;
+uniform float iTime;
+
+void main() {
+    vec2 uv = (gl_FragCoord.xy / iResolution.xy) * 2.0 - 1.0;
+    float r = length(uv);
+    float angle = atan(uv.y, uv.x);
+
+    // TODO: implement a disc with radial striae and pores.
+    float disc = smoothstep(0.9, 1.0, 1.0 - r);
+
+    gl_FragColor = vec4(vec3(disc), 1.0);
+}
+```
+
+***
+
+### `code/shaders/pennate_naviculoid_boat.frag`
+
+```glsl
+// Pennate naviculoid boat – placeholder
+// Corresponds to catalog/pennate/naviculoid_boat_shapes.md
+
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+uniform vec2 iResolution;
+uniform float iTime;
+
+float boatShape(vec2 p) {
+    // TODO: replace with a nicer centerline + width function.
+    p.x = abs(p.x);
+    float halfWidth = mix(0.1, 0.02, p.x); // tapered ends
+    return smoothstep(halfWidth, halfWidth - 0.01, abs(p.y));
+}
+
+void main() {
+    vec2 uv = (gl_FragCoord.xy / iResolution.xy) * 2.0 - 1.0;
+    uv.x *= iResolution.x / iResolution.y;
+
+    float body = boatShape(uv);
+    gl_FragColor = vec4(vec3(body), 1.0);
+}
+```
+
+***
+
+If you want, next step I can draft minimal markdown content for the two notebook README sections (or even outline the code cells) so they’re ready for you to start dropping in actual Python.
