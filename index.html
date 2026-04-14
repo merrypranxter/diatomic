@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diatomic Gallery - Interactive Diatom Viewer</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Georgia', serif;
+      background: linear-gradient(135deg, #0a1520 0%, #1a0520 100%);
+      color: #e0e0e0;
+      overflow: hidden;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      height: 100vh;
+    }
+
+    .sidebar {
+      background: rgba(5, 15, 25, 0.95);
+      border-right: 2px solid #4a9eff;
+      padding: 25px 20px;
+      overflow-y: auto;
+    }
+
+    h1 {
+      color: #4a9eff;
+      font-size: 1.8em;
+      margin-bottom: 10px;
+      font-family: 'Courier New', monospace;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+    }
+
+    .subtitle {
+      color: #7ab8ff;
+      font-size: 0.9em;
+      margin-bottom: 30px;
+      font-style: italic;
+    }
+
+    .section {
+      margin-bottom: 30px;
+    }
+
+    .section h2 {
+      color: #5aa8ff;
+      font-size: 0.95em;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+      border-bottom: 1px solid #4a9eff33;
+      padding-bottom: 8px;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 1px;
+    }
+
+    .diatom-card {
+      background: linear-gradient(135deg, rgba(74, 158, 255, 0.08), rgba(122, 184, 255, 0.05));
+      border: 1px solid #4a9eff44;
+      border-left: 3px solid transparent;
+      padding: 15px;
+      margin-bottom: 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .diatom-card:hover {
+      background: rgba(74, 158, 255, 0.15);
+      border-left-color: #4a9eff;
+      transform: translateX(5px);
+    }
+
+    .diatom-card.active {
+      background: linear-gradient(135deg, rgba(74, 158, 255, 0.25), rgba(122, 184, 255, 0.20));
+      border-color: #7ab8ff;
+      border-left-color: #4a9eff;
+    }
+
+    .diatom-name {
+      font-weight: bold;
+      color: #fff;
+      margin-bottom: 5px;
+      font-size: 1.05em;
+    }
+
+    .diatom-type {
+      color: #7ab8ff;
+      font-size: 0.75em;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 5px;
+      font-family: 'Courier New', monospace;
+    }
+
+    .diatom-desc {
+      font-size: 0.85em;
+      opacity: 0.8;
+      line-height: 1.4;
+    }
+
+    .canvas-area {
+      position: relative;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    canvas {
+      max-width: 90%;
+      max-height: 90%;
+      border: 3px solid #4a9eff44;
+      border-radius: 10px;
+      box-shadow: 0 10px 50px rgba(74, 158, 255, 0.3);
+    }
+
+    .info-panel {
+      position: absolute;
+      top: 30px;
+      left: 30px;
+      right: 30px;
+      background: rgba(5, 15, 25, 0.95);
+      border: 2px solid #4a9eff;
+      border-radius: 10px;
+      padding: 25px;
+      max-width: 600px;
+    }
+
+    .info-title {
+      color: #4a9eff;
+      font-size: 1.8em;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    .info-type {
+      color: #7ab8ff;
+      font-size: 0.9em;
+      text-transform: uppercase;
+      margin-bottom: 15px;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 2px;
+    }
+
+    .info-desc {
+      line-height: 1.8;
+      margin-bottom: 20px;
+    }
+
+    .info-features {
+      background: rgba(0, 0, 0, 0.4);
+      border-left: 3px solid #4a9eff;
+      padding: 15px;
+      margin-top: 15px;
+    }
+
+    .info-features h4 {
+      color: #7ab8ff;
+      margin-bottom: 10px;
+      font-size: 0.95em;
+    }
+
+    .info-features ul {
+      margin-left: 20px;
+      line-height: 1.8;
+    }
+
+    .info-features li {
+      color: #b0c8e0;
+      font-size: 0.9em;
+    }
+
+    .controls {
+      position: absolute;
+      bottom: 30px;
+      left: 30px;
+      right: 30px;
+      background: rgba(5, 15, 25, 0.95);
+      border: 2px solid #4a9eff;
+      border-radius: 10px;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+    }
+
+    .control-group label {
+      display: block;
+      color: #7ab8ff;
+      font-size: 0.85em;
+      margin-bottom: 8px;
+      font-family: 'Courier New', monospace;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .control-value {
+      color: #4a9eff;
+      font-weight: bold;
+      float: right;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 6px;
+      background: linear-gradient(90deg, #1a3a5a, #4a9eff);
+      border-radius: 3px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      background: #4a9eff;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(74, 158, 255, 0.5);
+    }
+
+    button {
+      background: linear-gradient(135deg, #4a9eff, #7ab8ff);
+      border: none;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'Courier New', monospace;
+      font-weight: bold;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 0.85em;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(74, 158, 255, 0.4);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #0a1520;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #4a9eff, #7ab8ff);
+      border-radius: 5px;
+    }
+
+    .microscope-frame {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      border: 20px solid rgba(0, 0, 0, 0.3);
+      box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.5);
+    }
+
+    .vignette {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      background: radial-gradient(circle, transparent 40%, rgba(0, 0, 0, 0.6) 100%);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="sidebar">
+      <h1>🔬 Diatomic</h1>
+      <div class="subtitle">Interactive Diatom Gallery</div>
+      
+      <div class="section">
+        <h2>Centric Diatoms</h2>
+        <div id="centricList"></div>
+      </div>
+
+      <div class="section">
+        <h2>Pennate Diatoms</h2>
+        <div id="pennateList"></div>
+      </div>
+
+      <div class="button-group">
+        <button onclick="randomDiatom()">🎲 Random</button>
+        <button onclick="exportFrame()">📸 Export</button>
+      </div>
+    </div>
+
+    <div class="canvas-area">
+      <div class="microscope-frame"></div>
+      <div class="vignette"></div>
+      <canvas id="canvas" width="800" height="800"></canvas>
+      
+      <div class="info-panel" id="infoPanel"></div>
+      
+      <div class="controls">
+        <div class="control-group">
+          <label>Zoom <span class="control-value" id="zoomValue">1.0x</span></label>
+          <input type="range" id="zoom" min="0.5" max="3" step="0.1" value="1" oninput="updateZoom(this.value)">
+        </div>
+        <div class="control-group">
+          <label>Rotation <span class="control-value" id="rotValue">0°</span></label>
+          <input type="range" id="rotation" min="0" max="360" step="1" value="0" oninput="updateRotation(this.value)">
+        </div>
+        <div class="control-group">
+          <label>Animation <span class="control-value" id="animValue">1.0x</span></label>
+          <input type="range" id="animSpeed" min="0" max="3" step="0.1" value="1" oninput="updateAnimSpeed(this.value)">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="diatom_library.js"></script>
+  <script>
+    const diatoms = [
+      {
+        id: 'centric_disc',
+        name: 'Cyclotella-style Disc',
+        type: 'CENTRIC · Radially Symmetric',
+        family: 'centric',
+        description: 'Circular valve with radial striae, concentric bands, and a central rosette pattern. Common freshwater plankton form.',
+        features: [
+          'Radial symmetry with 48 fine striae',
+          'Nested concentric bands',
+          'Hexagonal pore field',
+          'Central rosette with 12 petals',
+          'Iridescent silica shell'
+        ],
+        shader: 'centric_disc_radiate'
+      },
+      {
+        id: 'centric_triangle',
+        name: 'Triceratium Triangle',
+        type: 'CENTRIC · Polygonal',
+        family: 'centric',
+        description: 'Triangular valve with hexagonal pore lattice. Marine species with striking geometric symmetry.',
+        features: [
+          '3-fold rotational symmetry',
+          'Hexagonal pore lattice',
+          'Radial divisions from corners',
+          'Concentric ornament patterns',
+          'Corner process structures'
+        ],
+        shader: 'centric_polygonal_triangle'
+      },
+      {
+        id: 'centric_stellate',
+        name: 'Stellate Radiate',
+        type: 'CENTRIC · Star-shaped',
+        family: 'centric',
+        description: 'Star-shaped frustule with long radiating processes. Planktonic form with increased surface area.',
+        features: [
+          '8 radiating arms/processes',
+          'Spine-covered arms',
+          'Central disc with pore pattern',
+          'Radial ribs on main body',
+          'Extended floating adaptations'
+        ],
+        shader: 'centric_stellate'
+      },
+      {
+        id: 'pennate_boat',
+        name: 'Naviculoid Boat',
+        type: 'PENNATE · Bilateral Symmetric',
+        family: 'pennate',
+        description: 'Elongated boat-shaped valve with prominent raphe. Typical benthic pennate form.',
+        features: [
+          'Bilateral symmetry',
+          'Central raphe (longitudinal slit)',
+          'Transverse striae perpendicular to axis',
+          'Central and polar nodules',
+          'Fine pore rows along striae'
+        ],
+        shader: 'pennate_naviculoid_boat'
+      },
+      {
+        id: 'pennate_sigmoid',
+        name: 'Sigmoid Curve',
+        type: 'PENNATE · S-curved',
+        family: 'pennate',
+        description: 'S-shaped valve with curved raphe following the bend. Distinctive asymmetric form.',
+        features: [
+          'S-curve shape in valve view',
+          'Curved raphe following cell outline',
+          'Tilted transverse striae',
+          'Enhanced curvature highlight',
+          'Pore field distribution'
+        ],
+        shader: 'pennate_sigmoid'
+      },
+      {
+        id: 'pennate_cymbella',
+        name: 'Cymbelloid Banana',
+        type: 'PENNATE · Dorsiventral',
+        family: 'pennate',
+        description: 'Asymmetric crescent/banana shape with eccentric raphe. Shows dorsal-ventral differentiation.',
+        features: [
+          'Dorsiventral asymmetry',
+          'Eccentric (off-center) raphe',
+          'Ventral side more curved',
+          'Fibulae support ribs',
+          'Asymmetric striae pattern'
+        ],
+        shader: 'pennate_cymbelloid'
+      },
+      {
+        id: 'pennate_ribbon',
+        name: 'Ribbon Colony Chain',
+        type: 'PENNATE · Colonial',
+        family: 'pennate',
+        description: 'Chain-forming pennate cells connected by girdle bands. Common colonial arrangement.',
+        features: [
+          'Repeating cells in linear chain',
+          'Girdle band connections',
+          'Individual cell ornament',
+          'Central raphe in each cell',
+          'Coordinated colony movement'
+        ],
+        shader: 'pennate_ribbon_colony'
+      }
+    ];
+
+    let canvas, gl, program;
+    let currentDiatom = null;
+    let zoom = 1.0;
+    let rotation = 0.0;
+    let animSpeed = 1.0;
+    let startTime = Date.now();
+
+    function init() {
+      renderDiatomLists();
+      setupCanvas();
+      loadDiatom(diatoms[0]);
+    }
+
+    function renderDiatomLists() {
+      const centric = diatoms.filter(d => d.family === 'centric');
+      const pennate = diatoms.filter(d => d.family === 'pennate');
+
+      document.getElementById('centricList').innerHTML = centric.map((d, i) => `
+        <div class="diatom-card" onclick="loadDiatom(diatoms[${diatoms.indexOf(d)}])" id="card-${d.id}">
+          <div class="diatom-type">${d.type}</div>
+          <div class="diatom-name">${d.name}</div>
+          <div class="diatom-desc">${d.description.substring(0, 80)}...</div>
+        </div>
+      `).join('');
+
+      document.getElementById('pennateList').innerHTML = pennate.map((d, i) => `
+        <div class="diatom-card" onclick="loadDiatom(diatoms[${diatoms.indexOf(d)}])" id="card-${d.id}">
+          <div class="diatom-type">${d.type}</div>
+          <div class="diatom-name">${d.name}</div>
+          <div class="diatom-desc">${d.description.substring(0, 80)}...</div>
+        </div>
+      `).join('');
+    }
+
+    function loadDiatom(diatom) {
+      currentDiatom = diatom;
+
+      // Update active state
+      document.querySelectorAll('.diatom-card').forEach(el => el.classList.remove('active'));
+      document.getElementById('card-' + diatom.id).classList.add('active');
+
+      // Update info panel
+      document.getElementById('infoPanel').innerHTML = `
+        <div class="info-title">${diatom.name}</div>
+        <div class="info-type">${diatom.type}</div>
+        <div class="info-desc">${diatom.description}</div>
+        <div class="info-features">
+          <h4>Morphological Features:</h4>
+          <ul>
+            ${diatom.features.map(f => `<li>${f}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+
+      // Load shader
+      loadShader(diatom.shader);
+    }
+
+    function setupCanvas() {
+      canvas = document.getElementById('canvas');
+      gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+
+      if (!gl) {
+        alert('WebGL not supported');
+        return;
+      }
+    }
+
+    function loadShader(shaderName) {
+      const vertexSource = `
+        attribute vec4 a_position;
+        void main() {
+          gl_Position = a_position;
+        }
+      `;
+
+      const fragmentSource = `
+        precision highp float;
+        uniform vec2 u_resolution;
+        uniform float u_time;
+        uniform float u_zoom;
+        uniform float u_rotation;
+
+        ${DiatomLibrary.utilityFunctions}
+        ${DiatomLibrary.patternGenerators}
+        ${DiatomLibrary[shaderName]}
+
+        void main() {
+          vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution.xy) / u_resolution.y;
+          
+          // Apply zoom
+          uv /= u_zoom;
+          
+          // Apply rotation
+          float s = sin(u_rotation);
+          float c = cos(u_rotation);
+          mat2 rot = mat2(c, -s, s, c);
+          uv = rot * uv;
+          
+          // Subtle drift
+          uv *= rot(0.15 * sin(u_time * 0.4));
+          uv += 0.02 * vec2(sin(u_time * 0.31), cos(u_time * 0.27));
+          
+          vec3 col = ${shaderName}(uv, u_time);
+          
+          // Vignette
+          col *= 1.0 - 0.25 * length(uv);
+          
+          gl_FragColor = vec4(col, 1.0);
+        }
+      `;
+
+      compileAndRun(vertexSource, fragmentSource);
+    }
+
+    function compileAndRun(vertexSource, fragmentSource) {
+      const vertexShader = createShader(gl.VERTEX_SHADER, vertexSource);
+      const fragmentShader = createShader(gl.FRAGMENT_SHADER, fragmentSource);
+
+      if (!vertexShader || !fragmentShader) return;
+
+      if (program) gl.deleteProgram(program);
+
+      program = gl.createProgram();
+      gl.attachShader(program, vertexShader);
+      gl.attachShader(program, fragmentShader);
+      gl.linkProgram(program);
+
+      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        console.error('Link failed:', gl.getProgramInfoLog(program));
+        return;
+      }
+
+      gl.useProgram(program);
+
+      const positionBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+        -1, -1, 1, -1, -1, 1, 1, 1
+      ]), gl.STATIC_DRAW);
+
+      const positionLoc = gl.getAttribLocation(program, 'a_position');
+      gl.enableVertexAttribArray(positionLoc);
+      gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, 0, 0);
+
+      render();
+    }
+
+    function createShader(type, source) {
+      const shader = gl.createShader(type);
+      gl.shaderSource(shader, source);
+      gl.compileShader(shader);
+
+      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        console.error('Shader error:', gl.getShaderInfoLog(shader));
+        gl.deleteShader(shader);
+        return null;
+      }
+
+      return shader;
+    }
+
+    function render() {
+      const time = (Date.now() - startTime) / 1000.0 * animSpeed;
+
+      const resolutionLoc = gl.getUniformLocation(program, 'u_resolution');
+      const timeLoc = gl.getUniformLocation(program, 'u_time');
+      const zoomLoc = gl.getUniformLocation(program, 'u_zoom');
+      const rotationLoc = gl.getUniformLocation(program, 'u_rotation');
+
+      if (resolutionLoc) gl.uniform2f(resolutionLoc, canvas.width, canvas.height);
+      if (timeLoc) gl.uniform1f(timeLoc, time);
+      if (zoomLoc) gl.uniform1f(zoomLoc, zoom);
+      if (rotationLoc) gl.uniform1f(rotationLoc, rotation);
+
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      requestAnimationFrame(render);
+    }
+
+    function updateZoom(value) {
+      zoom = parseFloat(value);
+      document.getElementById('zoomValue').textContent = zoom.toFixed(1) + 'x';
+    }
+
+    function updateRotation(value) {
+      rotation = parseFloat(value) * Math.PI / 180;
+      document.getElementById('rotValue').textContent = value + '°';
+    }
+
+    function updateAnimSpeed(value) {
+      animSpeed = parseFloat(value);
+      document.getElementById('animValue').textContent = animSpeed.toFixed(1) + 'x';
+    }
+
+    function randomDiatom() {
+      const random = diatoms[Math.floor(Math.random() * diatoms.length)];
+      loadDiatom(random);
+    }
+
+    function exportFrame() {
+      const link = document.createElement('a');
+      link.download = `diatom-${currentDiatom.id}-${Date.now()}.png`;
+      link.href = canvas.toDataURL();
+      link.click();
+    }
+
+    init();
+  </script>
+</body>
+</html>
